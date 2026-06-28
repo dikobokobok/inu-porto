@@ -38,7 +38,17 @@ export default function App() {
         body: JSON.stringify({ email, message }),
       });
 
-      const data = await response.json();
+      let errorMessage = 'Gagal mengirim email';
+      let data: any = {};
+      
+      const responseText = await response.text();
+      if (responseText) {
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          // Response is not JSON
+        }
+      }
 
       if (response.ok) {
         setChatLog((prev) => [
@@ -50,7 +60,7 @@ export default function App() {
           }
         ]);
       } else {
-        throw new Error(data.error || 'Gagal mengirim email');
+        throw new Error(data.error || errorMessage);
       }
     } catch (err: any) {
       setChatLog((prev) => [
