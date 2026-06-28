@@ -24,21 +24,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Email and message are required' });
   }
 
+  // ponytail: use standard application/x-www-form-urlencoded format for FormSubmit.co ajax endpoint
   const formSubmitEndpoint = 'https://formsubmit.co/ajax/ibnunurramadani175@gmail.com';
 
   try {
+    const formData = new URLSearchParams();
+    formData.append('email', email);
+    formData.append('message', message);
+    formData.append('_subject', `New Message from ${email} (inu-porto)`);
+
     const response = await fetch(formSubmitEndpoint, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({
-        email: email,
-        message: message,
-        _subject: `New Message from ${email} (inu-porto)`,
-        _template: 'table'
-      })
+      body: formData.toString()
     });
 
     const text = await response.text();
