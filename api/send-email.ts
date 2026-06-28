@@ -1,4 +1,4 @@
-// ponytail: using formspree for free, zero-config email delivery without credentials
+// ponytail: using formsubmit.co for zero-config email submission to any email address without registration or password
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -10,10 +10,10 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'Email and message are required' });
   }
 
-  const formspreeEndpoint = 'https://formspree.io/f/mqaejddq'; // Custom formspree endpoint for ibnunurramadani@gmail.com (created on the fly / fallback to formspree public service)
+  const formSubmitEndpoint = 'https://formsubmit.co/ajax/ibnunurramadani@gmail.com';
 
   try {
-    const response = await fetch(formspreeEndpoint, {
+    const response = await fetch(formSubmitEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -21,15 +21,18 @@ export default async function handler(req: any, res: any) {
       },
       body: JSON.stringify({
         email: email,
-        message: `-------[ MESSAGE ]-------\nFrom: ${email}\nMessage: ${message}\n----------------------------------\nemail from: https://inu-porto.vercel.app/`
+        message: message,
+        _subject: `New Message from ${email} (inu-porto)`,
+        _template: 'table'
       })
     });
 
-    if (response.ok) {
+    const data = await response.json();
+
+    if (response.ok && data.success === 'true') {
       return res.status(200).json({ success: true, message: 'Message sent successfully' });
     } else {
-      const data = await response.json();
-      return res.status(response.status).json({ error: data.errors?.[0]?.message || 'Gagal mengirim email via Formspree' });
+      return res.status(response.status || 400).json({ error: data.message || 'Gagal mengirim email via FormSubmit' });
     }
   } catch (error: any) {
     console.error('Error sending email:', error);
