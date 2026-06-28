@@ -68,9 +68,22 @@ export default function App() {
     }
   }, [adminMessages]);
 
+  // Helper to generate Authorization Header
+  const getAuthHeader = () => {
+    if (usernameInput === 'ibnu' && passwordInput === 'admin123') {
+      return 'Basic ' + btoa('ibnu:admin123');
+    }
+    // Read from state inputs directly in case of login check
+    return 'Basic ' + btoa(`${usernameInput}:${passwordInput}`);
+  };
+
   const fetchAdminMessages = async () => {
     try {
-      const res = await fetch('/api/messages');
+      const headers: HeadersInit = {};
+      if (isLoggedIn) {
+        headers['Authorization'] = getAuthHeader();
+      }
+      const res = await fetch('/api/messages', { headers });
       if (res.ok) {
         const data = await res.json();
         setAdminMessages(data);
@@ -97,7 +110,10 @@ export default function App() {
     try {
       const res = await fetch('/api/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': getAuthHeader()
+        },
         body: JSON.stringify({ replyToId: messageId, replyText: text })
       });
       if (res.ok) {

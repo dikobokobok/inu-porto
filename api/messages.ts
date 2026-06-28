@@ -1,10 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import fs from 'fs';
-import path from 'path';
 
-// ponytail: since vercel serverless functions have a read-only filesystem,
-// we emulate a persistent datastore using a global in-memory array for preview/demo,
-// and return structured JSON responses. In production, a database should be used.
+// Emulate persistent database
 let messagesDb: any[] = [
   {
     id: "1",
@@ -16,20 +12,36 @@ let messagesDb: any[] = [
 ];
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Only allow Vercel domain or local development (strictly restrict CORS)
+  const origin = req.headers.origin;
+  const allowedOrigins = ['https://inu-porto.vercel.app', 'http://localhost:5173', 'http://127.0.0.1:5173'];
+  
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', 'https://inu-porto.vercel.app');
+  }
+  
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
   );
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // GET: Fetch all messages
+  // Simple token authorization check to protect message data from unauthorized GET/POST
+  const authHeader = req.headers.authorization;
+  const isAdmin = authHeader === 'Basic ' + Buffer.from('ibnu:admin123').toString('base64');
+
+  // GET: Fetch all messages (Restricted to authenticated admin)
   if (req.method === 'GET') {
+    if (!isAdmin) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
     return res.status(200).json(messagesDb);
   }
 
@@ -37,12 +49,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     const { email, message, replyToId, replyText } = req.body;
 
-    // Handle Admin Reply
+    // Handle Admin Reply (Requires authorization)
     if (replyToId && replyText) {
+      if (!isAdmin) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
       const msgIndex = messagesDb.findIndex(m => m.id === replyToId);
       if (msgIndex !== -1) {
         messagesDb[msgIndex].replies.push({
-          text: replyText,
+          text: replyText.replace(/</g, "&lt;").replace(/>/g, "&gt;"), // Sanitize HTML tag inputs
           timestamp: new Date().toISOString()
         });
         return res.status(200).json({ success: true, message: 'Reply added successfully', messages: messagesDb });
@@ -50,15 +65,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: 'Message not found' });
     }
 
-    // Handle New Guest Message
+    // Handle New Guest Message (Publicly open, but sanitized)
     if (!email || !message) {
       return res.status(400).json({ error: 'Email and message are required' });
     }
 
+    // Sanitize guest email and message to avoid HTML injection / XSS
+    const cleanEmail = email.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const cleanMessage = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
     const newMessage = {
       id: String(Date.now()),
-      email,
-      message,
+      email: cleanEmail,
+      message: cleanMessage,
       timestamp: new Date().toISOString(),
       replies: []
     };

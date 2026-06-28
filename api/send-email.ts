@@ -1,10 +1,18 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Allow CORS
+  // Only allow Vercel domain or local development (strictly restrict CORS)
+  const origin = req.headers.origin;
+  const allowedOrigins = ['https://inu-porto.vercel.app', 'http://localhost:5173', 'http://127.0.0.1:5173'];
+  
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', 'https://inu-porto.vercel.app');
+  }
+
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
@@ -24,14 +32,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Email and message are required' });
   }
 
-  // ponytail: use standard application/x-www-form-urlencoded format for FormSubmit.co ajax endpoint
+  // Sanitize input variables to prevent injection
+  const cleanEmail = email.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const cleanMessage = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
   const formSubmitEndpoint = 'https://formsubmit.co/ajax/ibnunurramadani175@gmail.com';
 
   try {
     const formData = new URLSearchParams();
-    formData.append('email', email);
-    formData.append('message', message);
-    formData.append('_subject', `New Message from ${email} (inu-porto)`);
+    formData.append('email', cleanEmail);
+    formData.append('message', cleanMessage);
+    formData.append('_subject', `New Message from ${cleanEmail} (inu-porto)`);
 
     const response = await fetch(formSubmitEndpoint, {
       method: 'POST',
