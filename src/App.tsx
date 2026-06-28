@@ -5,35 +5,65 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  const [visitorName, setVisitorName] = useState('');
+  const [visitorEmail, setVisitorEmail] = useState('');
   const [visitorMessage, setVisitorMessage] = useState('');
   const [chatLog, setChatLog] = useState<{ sender: string; text: string; time: string }[]>([
     { sender: 'System', text: 'Welcome to Ibnu\'s Terminal. Type your message below!', time: '12:00' }
   ]);
+  const [isSending, setIsSending] = useState(false);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!visitorMessage.trim()) return;
-    const name = visitorName.trim() || 'Anonymous Explorer';
+    if (!visitorMessage.trim() || !visitorEmail.trim()) return;
+    
+    setIsSending(true);
+    const email = visitorEmail.trim();
+    const message = visitorMessage.trim();
+
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const newMsg = {
-      sender: name,
-      text: visitorMessage,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      sender: email,
+      text: message,
+      time: timestamp
     };
     setChatLog((prev) => [...prev, newMsg]);
     setVisitorMessage('');
-    
-    // Auto response
-    setTimeout(() => {
+
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, message }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setChatLog((prev) => [
+          ...prev,
+          {
+            sender: 'IbnuBot',
+            text: `Terima kasih! Pesan Anda dari ${email} telah berhasil terkirim langsung ke email saya.`,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      } else {
+        throw new Error(data.error || 'Gagal mengirim email');
+      }
+    } catch (err: any) {
       setChatLog((prev) => [
         ...prev,
         {
-          sender: 'IbnuBot',
-          text: `Halo ${name}! Terima kasih atas pesannya. Pesan Anda telah terekam di sistem server lokal saya.`,
+          sender: 'System',
+          text: `[Error]: ${err.message || 'Gagal terhubung ke mail server.'}`,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
-    }, 1000);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -395,14 +425,16 @@ export default function App() {
             <form onSubmit={handleSendMessage} className="space-y-2">
               <div className="flex gap-2">
                 <input
-                  type="text"
-                  placeholder="Nama Pengunjung"
-                  value={visitorName}
-                  onChange={(e) => setVisitorName(e.target.value)}
+                  type="email"
+                  required
+                  placeholder="Email Wajib"
+                  value={visitorEmail}
+                  onChange={(e) => setVisitorEmail(e.target.value)}
                   className="w-1/3 bg-[#1A1A1A] text-white pixel-border-sm border-[#606060] p-1.5 focus:outline-none focus:border-[#A0D8F0] text-xs placeholder:text-[#606060]"
                 />
                 <input
                   type="text"
+                  required
                   placeholder="Ketik pesan..."
                   value={visitorMessage}
                   onChange={(e) => setVisitorMessage(e.target.value)}
@@ -411,9 +443,10 @@ export default function App() {
               </div>
               <button
                 type="submit"
-                className="w-full bg-[#A0D8F0] text-black font-pixel text-[10px] py-2 hover:bg-[#B0E0F8] transition-colors active:translate-y-0.5"
+                disabled={isSending}
+                className="w-full bg-[#A0D8F0] text-black font-pixel text-[10px] py-2 hover:bg-[#B0E0F8] transition-colors active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                EXECUTE SEND
+                {isSending ? 'SENDING...' : 'EXECUTE SEND'}
               </button>
             </form>
           </div>
