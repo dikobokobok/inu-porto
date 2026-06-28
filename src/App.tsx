@@ -21,11 +21,52 @@ export default function App() {
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
   const [replyInputs, setReplyInputs] = useState<{ [key: string]: string }>({});
 
+  // Detect /admin in URL hash or path
   useEffect(() => {
-    if (isLoggedIn) {
+    const checkHash = () => {
+      if (window.location.hash === '#/admin' || window.location.pathname === '/admin') {
+        setIsAdminMode(true);
+      } else {
+        setIsAdminMode(false);
+      }
+    };
+    checkHash();
+    window.addEventListener('hashchange', checkHash);
+    return () => window.removeEventListener('hashchange', checkHash);
+  }, []);
+
+  // Poll for messages dynamically to make sure new interactions load
+  useEffect(() => {
+    if (isLoggedIn || !isAdminMode) {
       fetchAdminMessages();
+      const interval = setInterval(fetchAdminMessages, 4000);
+      return () => clearInterval(interval);
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, isAdminMode]);
+
+  // Load chat log from messages database for visitors
+  useEffect(() => {
+    if (adminMessages.length > 0) {
+      const logs: { sender: string; text: string; time: string }[] = [
+        { sender: 'System', text: 'Welcome to Ibnu\'s Terminal. Type your message below!', time: '12:00' }
+      ];
+      // Map existing messages and replies into chat log chronological order
+      // We sort messages by timestamp ascending for a real chat log feel
+      const sortedMsgs = [...adminMessages].reverse();
+      sortedMsgs.forEach((msg) => {
+        const msgTime = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        logs.push({ sender: msg.email, text: msg.message, time: msgTime });
+        
+        if (msg.replies) {
+          msg.replies.forEach((rep: any) => {
+            const repTime = new Date(rep.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            logs.push({ sender: 'IbnuBot', text: rep.text, time: repTime });
+          });
+        }
+      });
+      setChatLog(logs);
+    }
+  }, [adminMessages]);
 
   const fetchAdminMessages = async () => {
     try {
@@ -35,7 +76,7 @@ export default function App() {
         setAdminMessages(data);
       }
     } catch (err) {
-      console.error('Error fetching admin messages:', err);
+      console.error('Error fetching messages:', err);
     }
   };
 
@@ -81,8 +122,6 @@ export default function App() {
     const email = visitorEmail.trim();
     const message = visitorMessage.trim();
 
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
     try {
       const res = await fetch('/api/messages', {
         method: 'POST',
@@ -91,16 +130,8 @@ export default function App() {
       });
 
       if (res.ok) {
-        setChatLog((prev) => [
-          ...prev,
-          { sender: email, text: message, time: timestamp },
-          {
-            sender: 'IbnuBot',
-            text: `Pesan terkirim ke Inbox Admin! Admin ibnu dapat membalasnya dari Dashboard.`,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
         setVisitorMessage('');
+        fetchAdminMessages();
       } else {
         throw new Error();
       }
@@ -147,21 +178,18 @@ export default function App() {
           </div>
           
           <nav className="flex flex-wrap gap-2 justify-center">
-            <a href="#about" onClick={() => setIsAdminMode(false)} className="px-3 py-1.5 font-pixel text-xs bg-[#E8E0D5] hover:bg-[#D34848] hover:text-white transition-colors pixel-border-sm">
+            <a href="#about" onClick={() => { window.location.hash = ''; setIsAdminMode(false); }} className="px-3 py-1.5 font-pixel text-xs bg-[#E8E0D5] hover:bg-[#D34848] hover:text-white transition-colors pixel-border-sm">
               [ABOUT]
             </a>
-            <a href="#skills" onClick={() => setIsAdminMode(false)} className="px-3 py-1.5 font-pixel text-xs bg-[#E8E0D5] hover:bg-[#D34848] hover:text-white transition-colors pixel-border-sm">
+            <a href="#skills" onClick={() => { window.location.hash = ''; setIsAdminMode(false); }} className="px-3 py-1.5 font-pixel text-xs bg-[#E8E0D5] hover:bg-[#D34848] hover:text-white transition-colors pixel-border-sm">
               [SKILLS]
             </a>
-            <a href="#experience" onClick={() => setIsAdminMode(false)} className="px-3 py-1.5 font-pixel text-xs bg-[#E8E0D5] hover:bg-[#D34848] hover:text-white transition-colors pixel-border-sm">
+            <a href="#experience" onClick={() => { window.location.hash = ''; setIsAdminMode(false); }} className="px-3 py-1.5 font-pixel text-xs bg-[#E8E0D5] hover:bg-[#D34848] hover:text-white transition-colors pixel-border-sm">
               [WORKS]
             </a>
-            <a href="#achievements" onClick={() => setIsAdminMode(false)} className="px-3 py-1.5 font-pixel text-xs bg-[#E8E0D5] hover:bg-[#D34848] hover:text-white transition-colors pixel-border-sm">
+            <a href="#achievements" onClick={() => { window.location.hash = ''; setIsAdminMode(false); }} className="px-3 py-1.5 font-pixel text-xs bg-[#E8E0D5] hover:bg-[#D34848] hover:text-white transition-colors pixel-border-sm">
               [QUESTS]
             </a>
-            <button onClick={() => setIsAdminMode(!isAdminMode)} className="px-3 py-1.5 font-pixel text-xs bg-[#D34848] text-white hover:bg-[#B83D3D] transition-colors pixel-border-sm">
-              {isAdminMode ? '[PORTFOLIO]' : '[ADMIN PANEL]'}
-            </button>
           </nav>
         </div>
       </header>
