@@ -1,0 +1,8 @@
+[
+  {
+    "bugId": "BUG-1",
+    "response": "ACCEPT",
+    "analysisSummary": "The credential 'ibnu:admin123' is hardcoded directly in code for authentication checks on both GET and POST requests in api/messages.ts, which is a security finding matching CWE-798 (Insecure Credential Storage).",
+    "counterEvidence": "api/messages.ts:38 const isAdmin = authHeader === 'Basic ' + Buffer.from('ibnu:admin123').toString('base64');"
+  }
+]

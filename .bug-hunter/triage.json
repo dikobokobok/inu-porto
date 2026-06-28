@@ -1,0 +1,87 @@
+{
+  "generatedAt": "2026-06-28T17:17:52.636Z",
+  "target": "/home/inu/app/porto/1/portfolio",
+  "totalFiles": 8,
+  "scannableFiles": 8,
+  "strategy": "small",
+  "modeFile": "modes/small.md",
+  "needsLoop": false,
+  "fileBudget": 60,
+  "avgLines": 131,
+  "avgTokensPerFile": 524,
+  "estimatedTotalLines": 1048,
+  "sampledFiles": 8,
+  "domains": [
+    {
+      "path": "api",
+      "tier": "HIGH",
+      "fileCount": 2,
+      "riskBreakdown": {
+        "critical": 0,
+        "high": 2,
+        "medium": 0,
+        "low": 0,
+        "context-only": 0
+      }
+    },
+    {
+      "path": ".",
+      "tier": "MEDIUM",
+      "fileCount": 3,
+      "riskBreakdown": {
+        "critical": 0,
+        "high": 0,
+        "medium": 3,
+        "low": 0,
+        "context-only": 0
+      }
+    },
+    {
+      "path": "src",
+      "tier": "MEDIUM",
+      "fileCount": 3,
+      "riskBreakdown": {
+        "critical": 0,
+        "high": 0,
+        "medium": 3,
+        "low": 0,
+        "context-only": 0
+      }
+    }
+  ],
+  "scanOrder": [
+    "api/messages.ts",
+    "api/send-email.ts",
+    "postcss.config.cjs",
+    "src/App.tsx",
+    "src/BoomerangVideoBg.tsx",
+    "src/main.tsx",
+    "tailwind.config.cjs",
+    "vite.config.ts"
+  ],
+  "tokenEstimate": {
+    "recon": 160,
+    "perHunterChunk": 4192,
+    "totalPipeline": 5952
+  },
+  "recommendations": [
+    "Small codebase — Recon is optional, proceed directly to Hunter."
+  ],
+  "riskMap": {
+    "critical": [],
+    "high": [
+      "api/messages.ts",
+      "api/send-email.ts"
+    ],
+    "medium": [
+      "postcss.config.cjs",
+      "src/App.tsx",
+      "src/BoomerangVideoBg.tsx",
+      "src/main.tsx",
+      "tailwind.config.cjs",
+      "vite.config.ts"
+    ],
+    "low": [],
+    "context-only": []
+  }
+}

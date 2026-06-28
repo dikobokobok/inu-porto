@@ -1,0 +1,12 @@
+[
+  {
+    "bugId": "BUG-1",
+    "verdict": "REAL_BUG",
+    "trueSeverity": "Medium",
+    "confidenceScore": 95,
+    "confidenceLabel": "high",
+    "verificationMode": "INDEPENDENTLY_VERIFIED",
+    "analysisSummary": "Celah keamanan Hardcoded Credentials (CWE-798) terdeteksi pada api/messages.ts:38. Kredensial ibnu:admin123 disandikan langsung di dalam kode serverless API untuk proses otentikasi. Ini bersifat AUTHENTICATED/EASY.",
+    "suggestedFix": "Pindahkan kredensial 'ibnu' dan 'admin123' ke Environment Variables Vercel (misal: ADMIN_USERNAME dan ADMIN_PASSWORD) dan baca menggunakan process.env."
+  }
+]

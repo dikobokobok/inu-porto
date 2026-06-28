@@ -33,9 +33,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
-  // Simple token authorization check to protect message data from unauthorized GET/POST
+  // Authorization check using env vars (fallback to hardcoded for local dev only)
   const authHeader = req.headers.authorization;
-  const isAdmin = authHeader === 'Basic ' + Buffer.from('ibnu:admin123').toString('base64');
+  const adminUser = process.env.ADMIN_USERNAME || 'ibnu';
+  const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
+  const isAdmin = authHeader === 'Basic ' + Buffer.from(`${adminUser}:${adminPass}`).toString('base64');
 
   // GET: Fetch all messages (Restricted to authenticated admin)
   if (req.method === 'GET') {
