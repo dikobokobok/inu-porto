@@ -316,21 +316,34 @@ export default function App() {
             <div className="bg-white pixel-border pixel-box-shadow p-6 sm:p-8 relative overflow-hidden">
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e5e5_1px,transparent_1px),linear-gradient(to_bottom,#e5e5e5_1px,transparent_1px)] bg-[size:24px_24px] opacity-15 pointer-events-none" />
               
-              <div className="relative z-10">
-                <span className="inline-block bg-[#87CEEB] text-[#2A2A2A] font-pixel text-[10px] px-3 py-1 pixel-border-sm mb-4">
-                  CHAR_PROFILE
-                </span>
-                
-                <h2 className="text-3xl sm:text-4xl font-pixel text-[#2A2A2A] leading-none mb-4">
-                  HALO, SAYA <br className="sm:hidden" />
-                  <span className="text-[#D34848] block sm:inline">IBNU NUR RAMADANI</span>
-                </h2>
+              <div className="relative z-10 flex flex-col md:flex-row gap-6 items-center">
+                <div className="flex-1">
+                  <span className="inline-block bg-[#87CEEB] text-[#2A2A2A] font-pixel text-[10px] px-3 py-1 pixel-border-sm mb-4">
+                    CHAR_PROFILE
+                  </span>
+                  
+                  <h2 className="text-3xl sm:text-4xl font-pixel text-[#2A2A2A] leading-none mb-4">
+                    HALO, SAYA <br className="sm:hidden" />
+                    <span className="text-[#D34848] block sm:inline">IBNU NUR RAMADANI</span>
+                  </h2>
 
-                <p className="text-sm sm:text-base text-[#6B6B6B] leading-relaxed mb-6 font-mono">
-                  Lulusan <strong className="text-[#2A2A2A]">SMK Yos Sudarso Jeruklegi</strong> jurusan <strong className="text-[#2A2A2A]">Teknik Komputer Jaringan (TKJ)</strong>. 
-                  Memiliki ketertarikan mendalam dalam mengeksplorasi puncak gunung dan teknologi mutakhir. Berpengalaman 1 tahun sebagai teknisi CCTV, instalatur jaringan lokal, dan penanganan perbaikan perangkat komputer.
-                </p>
+                  <p className="text-sm sm:text-base text-[#6B6B6B] leading-relaxed mb-6 font-mono">
+                    Lulusan <strong className="text-[#2A2A2A]">SMK Yos Sudarso Jeruklegi</strong> jurusan <strong className="text-[#2A2A2A]">Teknik Komputer Jaringan (TKJ)</strong>. 
+                    Memiliki ketertarikan mendalam dalam mengeksplorasi puncak gunung dan teknologi mutakhir. Berpengalaman 1 tahun sebagai teknisi CCTV, instalatur jaringan lokal, dan penanganan perbaikan perangkat komputer.
+                  </p>
+                </div>
 
+                <div className="w-40 h-40 bg-white pixel-border pixel-box-shadow flex items-center justify-center relative shrink-0 overflow-hidden self-start md:self-center">
+                  <img 
+                    src="https://raw.githubusercontent.com/dikobokobok/inu-porto/refs/heads/main/public/icon.ico" 
+                    alt="Ibnu Nur Ramadani Profile" 
+                    className="w-36 h-36 object-contain"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#7CB342] border-2 border-[#2A2A2A]" />
+                </div>
+              </div>
+
+              <div className="relative z-10 mt-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-[#F4EFE6] p-4 pixel-border-sm">
                     <div className="flex items-center gap-2 mb-1">
