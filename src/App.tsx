@@ -81,7 +81,7 @@ export default function App() {
       {/* Top Retro Banner / Marquee */}
       <div className="bg-[#2A2A2A] text-[#F4EFE6] py-2 px-4 overflow-hidden border-b-4 border-[#2A2A2A] flex justify-between items-center text-xs font-pixel">
         <div className="animate-marquee whitespace-nowrap">
-          SYSTEM STATUS: ONLINE // LULUSAN SMK YOS SUDARSO JERUKLEGI // TEKNIK KOMPUTER JARINGAN // TEKNISI CCTV & JARINGAN // PECINTA ALAM //
+          SYSTEM STATUS: ONLINE // LULUSAN SMK YOS SUDARSO JERUKLEGI // TEKNIK KOMPUTER JARINGAN // TEKNISI CCTV & JARINGAN // PECINTA ALAM // ibnunurramadani175@gmail.com //
         </div>
         <div className="hidden md:block shrink-0 bg-[#D34848] px-2 py-0.5 border-2 border-[#F4EFE6] text-white">
           LVL 99

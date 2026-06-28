@@ -10,7 +10,7 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'Email and message are required' });
   }
 
-  const formSubmitEndpoint = 'https://formsubmit.co/ajax/ibnunurramadani@gmail.com';
+  const formSubmitEndpoint = 'https://formsubmit.co/ajax/ibnunurramadani175@gmail.com';
 
   try {
     const response = await fetch(formSubmitEndpoint, {
