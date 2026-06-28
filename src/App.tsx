@@ -165,8 +165,12 @@ export default function App() {
       <header className="max-w-6xl mx-auto px-4 mt-6">
         <div className="bg-white pixel-border pixel-box-shadow p-4 sm:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-[#D34848] pixel-border flex items-center justify-center text-white relative shrink-0">
-              <span className="font-pixel text-2xl">IN</span>
+            <div className="w-16 h-16 bg-white pixel-border flex items-center justify-center relative shrink-0 overflow-hidden">
+              <img 
+                src="https://raw.githubusercontent.com/dikobokobok/inu-porto/refs/heads/main/public/icon.ico" 
+                alt="Ibnu Icon" 
+                className="w-12 h-12 object-contain"
+              />
               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-[#7CB342] border border-[#2A2A2A]" />
             </div>
             <div>
