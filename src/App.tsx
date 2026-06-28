@@ -29,46 +29,28 @@ export default function App() {
     setChatLog((prev) => [...prev, newMsg]);
     setVisitorMessage('');
 
+    // ponytail: switch to standard client-side mailto redirect to bypass serverless/cors completely
     try {
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, message }),
-      });
-
-      let errorMessage = 'Gagal mengirim email';
-      let data: any = {};
+      const subject = encodeURIComponent(`Pesan Portofolio dari ${email}`);
+      const body = encodeURIComponent(`-------[ MESSAGE ]-------\nFrom: ${email}\nMessage: ${message}\n----------------------------------\nemail from: https://inu-porto.vercel.app/`);
       
-      const responseText = await response.text();
-      if (responseText) {
-        try {
-          data = JSON.parse(responseText);
-        } catch (e) {
-          // If response text is HTML (like Vercel error page), capture the text or use default
-          errorMessage = responseText.substring(0, 100);
+      // Open default email client
+      window.location.href = `mailto:ibnunurramadani175@gmail.com?subject=${subject}&body=${body}`;
+      
+      setChatLog((prev) => [
+        ...prev,
+        {
+          sender: 'IbnuBot',
+          text: `Membuka aplikasi email Anda untuk mengirim pesan ke ibnunurramadani175@gmail.com...`,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
-      }
-
-      if (response.ok) {
-        setChatLog((prev) => [
-          ...prev,
-          {
-            sender: 'IbnuBot',
-            text: `Terima kasih! Pesan Anda dari ${email} telah berhasil terkirim langsung ke email saya.`,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
-      } else {
-        throw new Error(data.error || errorMessage);
-      }
+      ]);
     } catch (err: any) {
       setChatLog((prev) => [
         ...prev,
         {
           sender: 'System',
-          text: `[Error]: ${err.message || 'Gagal terhubung ke mail server.'}`,
+          text: `[Error]: Gagal membuka aplikasi email.`,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
