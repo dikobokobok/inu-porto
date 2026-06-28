@@ -1,0 +1,9 @@
+[
+  {
+    "id": "1",
+    "email": "system@example.com",
+    "message": "Welcome to your admin panel!",
+    "timestamp": "2026-05-12T12:00:00.000Z",
+    "replies": []
+  }
+]
