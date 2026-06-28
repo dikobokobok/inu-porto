@@ -5,30 +5,60 @@ import path from 'path';
 // Resolved database path targeting /src/db/chat.json
 const dbPath = path.resolve(process.cwd(), 'src/db/chat.json');
 
-// Helper to safely read chat messages from the json file
-function readDb(): any[] {
+// Memory DB fallback to handle Vercel's read-only filesystem dynamically
+let memoryDb: any[] = [];
+let dbInitialized = false;
+
+function initDb() {
+  if (dbInitialized) return;
   try {
-    if (!fs.existsSync(dbPath)) {
-      // Ensure directory exists
-      fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-      fs.writeFileSync(dbPath, JSON.stringify([]), 'utf8');
-      return [];
+    if (fs.existsSync(dbPath)) {
+      const raw = fs.readFileSync(dbPath, 'utf8');
+      memoryDb = JSON.parse(raw);
+    } else {
+      memoryDb = [
+        {
+          id: "1",
+          email: "system@example.com",
+          message: "Welcome to Ibnu's secure chat network!",
+          timestamp: new Date().toISOString(),
+          replies: []
+        }
+      ];
     }
-    const raw = fs.readFileSync(dbPath, 'utf8');
-    return JSON.parse(raw);
   } catch (err) {
-    console.error('Error reading messages database:', err);
-    return [];
+    console.error('Error initializing messages database:', err);
+    memoryDb = [
+      {
+        id: "1",
+        email: "system@example.com",
+        message: "Welcome to Ibnu's secure chat network! (Memory Fallback)",
+        timestamp: new Date().toISOString(),
+        replies: []
+      }
+    ];
   }
+  dbInitialized = true;
 }
 
-// Helper to safely write messages back to the json file
+// Helper to safely read chat messages
+function readDb(): any[] {
+  initDb();
+  return memoryDb;
+}
+
+// Helper to safely write messages
 function writeDb(data: any[]): void {
+  memoryDb = data;
   try {
-    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    const dir = path.dirname(dbPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
   } catch (err) {
-    console.error('Error writing to messages database:', err);
+    // Non-blocking log: works in memory if Vercel serverless filesystem is read-only
+    console.warn('Filesystem write bypassed. Running in-memory database:', err);
   }
 }
 
@@ -63,7 +93,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // GET: Fetch all messages
   if (req.method === 'GET') {
     const messages = readDb();
-    // Return all chats directly to user/admin
     return res.status(200).json(messages);
   }
 
