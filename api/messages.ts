@@ -1,15 +1,36 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import fs from 'fs';
+import path from 'path';
 
-// Emulate persistent database
-let messagesDb: any[] = [
-  {
-    id: "1",
-    email: "system@example.com",
-    message: "Welcome to your admin panel!",
-    timestamp: new Date().toISOString(),
-    replies: []
+// Resolved database path targeting /src/db/chat.json
+const dbPath = path.resolve(process.cwd(), 'src/db/chat.json');
+
+// Helper to safely read chat messages from the json file
+function readDb(): any[] {
+  try {
+    if (!fs.existsSync(dbPath)) {
+      // Ensure directory exists
+      fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+      fs.writeFileSync(dbPath, JSON.stringify([]), 'utf8');
+      return [];
+    }
+    const raw = fs.readFileSync(dbPath, 'utf8');
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error('Error reading messages database:', err);
+    return [];
   }
-];
+}
+
+// Helper to safely write messages back to the json file
+function writeDb(data: any[]): void {
+  try {
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error writing to messages database:', err);
+  }
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow Vercel domain or local development (strictly restrict CORS)
@@ -39,30 +60,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
   const isAdmin = authHeader === 'Basic ' + Buffer.from(`${adminUser}:${adminPass}`).toString('base64');
 
-  // GET: Fetch all messages (Restricted to authenticated admin)
+  // GET: Fetch all messages
   if (req.method === 'GET') {
-    if (!isAdmin) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    return res.status(200).json(messagesDb);
+    const messages = readDb();
+    // Return all chats directly to user/admin
+    return res.status(200).json(messages);
   }
 
   // POST: Create a new message or submit a reply
   if (req.method === 'POST') {
     const { email, message, replyToId, replyText } = req.body;
+    let messages = readDb();
 
     // Handle Admin Reply (Requires authorization)
     if (replyToId && replyText) {
       if (!isAdmin) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
-      const msgIndex = messagesDb.findIndex(m => m.id === replyToId);
+      const msgIndex = messages.findIndex(m => m.id === replyToId);
       if (msgIndex !== -1) {
-        messagesDb[msgIndex].replies.push({
+        messages[msgIndex].replies.push({
           text: replyText.replace(/</g, "&lt;").replace(/>/g, "&gt;"), // Sanitize HTML tag inputs
           timestamp: new Date().toISOString()
         });
-        return res.status(200).json({ success: true, message: 'Reply added successfully', messages: messagesDb });
+        writeDb(messages);
+        return res.status(200).json({ success: true, message: 'Reply added successfully', messages: messages });
       }
       return res.status(404).json({ error: 'Message not found' });
     }
@@ -84,7 +106,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       replies: []
     };
 
-    messagesDb.unshift(newMessage);
+    messages.unshift(newMessage);
+    writeDb(messages);
     return res.status(200).json({ success: true, message: 'Message saved successfully', data: newMessage });
   }
 

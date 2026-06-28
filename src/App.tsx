@@ -37,12 +37,10 @@ export default function App() {
 
   // Poll for messages dynamically to make sure new interactions load
   useEffect(() => {
-    if (isLoggedIn || !isAdminMode) {
-      fetchAdminMessages();
-      const interval = setInterval(fetchAdminMessages, 4000);
-      return () => clearInterval(interval);
-    }
-  }, [isLoggedIn, isAdminMode]);
+    fetchAdminMessages();
+    const interval = setInterval(fetchAdminMessages, 4000);
+    return () => clearInterval(interval);
+  }, [isLoggedIn, isAdminMode, usernameInput, passwordInput]);
 
   // Load chat log from messages database for visitors
   useEffect(() => {
@@ -80,9 +78,7 @@ export default function App() {
   const fetchAdminMessages = async () => {
     try {
       const headers: HeadersInit = {};
-      if (isLoggedIn) {
-        headers['Authorization'] = getAuthHeader();
-      }
+      // Fetch openly, api will return database messages to allow frontend user to see bot replies
       const res = await fetch('/api/messages', { headers });
       if (res.ok) {
         const data = await res.json();
