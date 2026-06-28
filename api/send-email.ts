@@ -1,5 +1,6 @@
-// ponytail: using formsubmit.co for zero-config email submission to any email address without registration or password
-export default async function handler(req: any, res: any) {
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -27,9 +28,15 @@ export default async function handler(req: any, res: any) {
       })
     });
 
-    const data = await response.json();
+    const text = await response.text();
+    let data: any = {};
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      // ignore
+    }
 
-    if (response.ok && data.success === 'true') {
+    if (response.ok && (data.success === 'true' || data.success === true)) {
       return res.status(200).json({ success: true, message: 'Message sent successfully' });
     } else {
       return res.status(response.status || 400).json({ error: data.message || 'Gagal mengirim email via FormSubmit' });

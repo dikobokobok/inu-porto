@@ -46,7 +46,8 @@ export default function App() {
         try {
           data = JSON.parse(responseText);
         } catch (e) {
-          // Response is not JSON
+          // If response text is HTML (like Vercel error page), capture the text or use default
+          errorMessage = responseText.substring(0, 100);
         }
       }
 
