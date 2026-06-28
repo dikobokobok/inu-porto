@@ -29,19 +29,38 @@ export default function App() {
     setChatLog((prev) => [...prev, newMsg]);
     setVisitorMessage('');
 
-    // ponytail: switch to standard client-side mailto redirect to bypass serverless/cors completely
+    // ponytail: use standard HTML form submission programmatically targeting FormSubmit.co
     try {
-      const subject = encodeURIComponent(`Pesan Portofolio dari ${email}`);
-      const body = encodeURIComponent(`-------[ MESSAGE ]-------\nFrom: ${email}\nMessage: ${message}\n----------------------------------\nemail from: https://inu-porto.vercel.app/`);
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://formsubmit.co/ibnunurramadani175@gmail.com';
       
-      // Open default email client
-      window.location.href = `mailto:ibnunurramadani175@gmail.com?subject=${subject}&body=${body}`;
+      const emailInput = document.createElement('input');
+      emailInput.type = 'hidden';
+      emailInput.name = 'email';
+      emailInput.value = email;
+      form.appendChild(emailInput);
       
+      const messageInput = document.createElement('input');
+      messageInput.type = 'hidden';
+      messageInput.name = 'message';
+      messageInput.value = `-------[ MESSAGE ]-------\nFrom: ${email}\nMessage: ${message}\n----------------------------------\nemail from: https://inu-porto.vercel.app/`;
+      form.appendChild(messageInput);
+
+      const nextInput = document.createElement('input');
+      nextInput.type = 'hidden';
+      nextInput.name = '_next';
+      nextInput.value = window.location.href;
+      form.appendChild(nextInput);
+
+      document.body.appendChild(form);
+      form.submit();
+
       setChatLog((prev) => [
         ...prev,
         {
           sender: 'IbnuBot',
-          text: `Membuka aplikasi email Anda untuk mengirim pesan ke ibnunurramadani175@gmail.com...`,
+          text: `Mengalihkan halaman untuk mengirimkan pesan Anda ke ${email}...`,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
@@ -50,7 +69,7 @@ export default function App() {
         ...prev,
         {
           sender: 'System',
-          text: `[Error]: Gagal membuka aplikasi email.`,
+          text: `[Error]: Gagal memproses pengiriman form.`,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
